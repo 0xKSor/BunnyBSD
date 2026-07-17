@@ -1,0 +1,9 @@
+obj*
+tooldir*
+destdir*
+releasedir*
+sys/arch/*/compile/obj*
+sys/arch/*/compile/BUNNYCORE*
+compile_commands.json
+.clangd
+.DS_Store
