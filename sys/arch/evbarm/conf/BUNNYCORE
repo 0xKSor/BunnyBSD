@@ -1,0 +1,1 @@
+include "arch/evbarm/conf/GENERIC64"
