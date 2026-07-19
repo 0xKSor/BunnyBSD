@@ -95,8 +95,8 @@ pledge_open_check(struct lwp *l, int flags)
         }
     }
 
-    /* O_RDONLY require rpath */
-    if ((flags & (O_WRONLY | O_RDWR)) == 0) {
+    /* any read require RPATH and check that its not O_WRONLY */
+    if ((flags & O_ACCMODE) != O_WRONLY) {
         if ((mask & PLEDGE_RPATH) == 0) {
             return EPERM;
         }
