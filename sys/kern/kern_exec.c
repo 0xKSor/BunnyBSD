@@ -429,7 +429,8 @@ check_exec(struct lwp *l, struct exec_package *epp, struct pathbuf *pb,
 		/* dont allow files with SETUID and SETID to run when exec pledged */
 		if ((epp->ep_vap->va_mode & (S_ISUID | S_ISGID)) != 0 &&
 		    !(epp->ep_vp->v_mount->mnt_flag & MNT_NOSUID)) {
-			return EACCES;
+			error = SET_ERROR(EACCES);
+			goto bad1;
 		}
 	}
 
