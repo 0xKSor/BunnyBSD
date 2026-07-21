@@ -419,6 +419,21 @@ check_exec(struct lwp *l, struct exec_package *epp, struct pathbuf *pb,
 	if ((error = VOP_GETATTR(vp, epp->ep_vap, l->l_cred)) != 0)
 		goto bad1;
 
+	struct proc *p = l->l_proc;
+	mutex_enter(p->p_lock);
+	bool pledged_exec = p->p_pledged_exec;
+	mutex_exit(p->p_lock);
+
+	if (pledged_exec) {
+
+		/* dont allow files with SETUID and SETID to run when exec pledged */
+		if ((epp->ep_vap->va_mode & (S_ISUID | S_ISGID)) != 0 &&
+		    !(epp->ep_vp->v_mount->mnt_flag & MNT_NOSUID)) {
+			error = SET_ERROR(EACCES);
+			goto bad1;
+		}
+	}
+
 	/* Check mount point */
 	if (vp->v_mount->mnt_flag & MNT_NOEXEC) {
 		error = SET_ERROR(EACCES);
@@ -1431,6 +1446,17 @@ execve_runproc(struct lwp *l, struct execve_data * restrict data,
 	} else {
 		mutex_exit(&proc_lock);
 	}
+
+	/* exec promises injection */
+	mutex_enter(p->p_lock);
+	if (p->p_pledged_exec) {
+		p->p_pledge = p->p_pledge_exec;
+		p->p_pledged = true;
+	} else {
+		p->p_pledge = 0;
+		p->p_pledged = false;
+	}
+	mutex_exit(p->p_lock);
 
 	exec_path_free(data);
 #ifdef TRACE_EXEC

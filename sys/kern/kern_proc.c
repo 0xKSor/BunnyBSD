@@ -1061,7 +1061,9 @@ proc_alloc(void)
 	p->p_stat = SIDL;			/* protect against others */
 
 	p->p_pledge = 0;            /* not pledged by defult */
+	p->p_pledge_exec = 0;
 	p->p_pledged = false;
+	p->p_pledged_exec = false;
 
 	proc_initspecific(p);
 	kdtrace_proc_ctor(NULL, p);
